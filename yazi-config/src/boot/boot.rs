@@ -1,7 +1,7 @@
-use std::{env, ffi::OsString, fs, path::PathBuf, process};
+use std::{ffi::OsString, fs, path::PathBuf, process};
 
 use clap::Parser;
-use yazi_shared::expand_path;
+use yazi_shared::{current_cwd, expand_path};
 
 use super::cli::Args;
 use crate::{Xdg, PREVIEW};
@@ -19,11 +19,11 @@ pub struct Boot {
 
 impl Boot {
 	fn parse_entry(entry: Option<PathBuf>) -> (PathBuf, Option<OsString>) {
-		let Some(entry) = entry else {
-			return (env::current_dir().unwrap(), None);
+		let entry = match entry {
+			Some(p) => expand_path(p),
+			None => return (current_cwd().unwrap(), None),
 		};
 
-		let entry = expand_path(entry);
 		let parent = entry.parent();
 		if parent.is_none() || entry.is_dir() {
 			return (entry, None);
